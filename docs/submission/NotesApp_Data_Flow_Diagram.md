@@ -1,5 +1,7 @@
 # Session 02 — NotesApp Numbered Data Flow Diagram
 
+Model baseline: upstream NotesApp commit [`1c83e42`](https://github.com/KristenPire/NoteApp/commit/1c83e422429c4b784411701ffd797b5ab5f397dc) (Session 02).
+
 - **TB1:** Browser ↔ Flask application
 - **TB2:** Flask application ↔ PostgreSQL database
 

@@ -1,5 +1,7 @@
 # Project 1 — NotesApp STRIDE Table and Risk Analysis
 
+Assessment baseline: upstream NotesApp commit [`1c83e42`](https://github.com/KristenPire/NoteApp/commit/1c83e422429c4b784411701ffd797b5ab5f397dc) (Session 02).
+
 **S:** Spoofing · **T:** Tampering · **R:** Repudiation · **I:** Information disclosure · **D:** Denial of service · **E:** Elevation of privilege
 
 **●:** Threat identified · **—:** No entry

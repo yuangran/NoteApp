@@ -8,6 +8,15 @@ A small grades application used throughout the Computer Security course. Teacher
 record grades and comments for their classes, students read their own grades, and an
 admin manages users and classes.
 
+## Coursework
+
+| Assignment | Files |
+|---|---|
+| Session 02 and Project 1 | [Data-flow diagram](docs/submission/NotesApp_Data_Flow_Diagram.md), [STRIDE and risk analysis](docs/submission/NotesApp_STRIDE_Table.md) |
+| Session 03: comment encryption | [AES-GCM storage](web/comment_crypto.py) |
+| Class 4: grade export integrity | [HMAC generation and verification](web/export_integrity.py) |
+| Class 5: HTTPS and passwords | [Transit audit](docs/submission/NotesApp_Transit_Audit.pdf), [password audit](docs/submission/NotesApp_Password_Audit.pdf) |
+
 ## Run it
 
 You need Docker with the Compose plugin. Run these commands from the repository root.
