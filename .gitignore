@@ -12,3 +12,6 @@ venv/
 # Local env overrides
 .env
 .env.local
+
+nginx/certs/
+crack/leaked_users.txt
