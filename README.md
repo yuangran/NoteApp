@@ -1,5 +1,9 @@
 # NotesApp
 
+- **Name:** Yu Angran
+- **English name:** Terry
+- **Student ID:** 2023900899
+
 A small grades application used throughout the Computer Security course. Teachers
 record grades and comments for their classes, students read their own grades, and an
 admin manages users and classes.
@@ -17,6 +21,13 @@ If `NOTESAPP_COMMENT_KEY` is not yet configured, generate it once:
 python3 -c 'import base64, secrets; print("NOTESAPP_COMMENT_KEY=" + base64.b64encode(secrets.token_bytes(32)).decode())' >> .env
 ```
 
+Set a separate 32-byte HMAC key for grade exports. If `NOTESAPP_EXPORT_HMAC_KEY`
+is not yet configured, generate it once:
+
+```
+python3 -c 'import base64, secrets; print("NOTESAPP_EXPORT_HMAC_KEY=" + base64.b64encode(secrets.token_bytes(32)).decode())' >> .env
+```
+
 Start the application:
 
 ```
@@ -29,6 +40,27 @@ When it is ready, open:
 
 ```
 http://localhost:8080
+```
+
+## Grade export integrity
+
+Use the teacher page's **export CSV** link to download `grades.csv`. The file ends
+with `# HMAC: <SHA-256 HMAC>`, computed over the UTF-8 CSV body, including its CRLF
+line endings. The HMAC line is excluded from the calculation.
+
+Verify a downloaded file with the server's key:
+
+```
+docker compose exec -T web python export_integrity.py < grades.csv
+```
+
+The command prints `CHECK PASSED` and exits with status 0 for an unchanged file.
+Editing a grade or comment makes it print `CHECK FAILED` and exit with status 1.
+
+Run the integrity checks:
+
+```
+docker compose exec -T web python -m unittest discover -s tests -v
 ```
 
 ## Test accounts

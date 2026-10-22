@@ -16,6 +16,7 @@ import subprocess
 import psycopg2
 import psycopg2.extras
 from comment_crypto import PREFIX, decrypt_comment, encrypt_comment
+from export_integrity import sign_export
 from flask import (
     Flask, request, session, redirect, url_for,
     render_template, Response, jsonify, abort,
@@ -335,7 +336,7 @@ def export_csv():
     for r in rows:
         writer.writerow([r["student"], r["class"], r["grade"], decrypt_comment(r["comment"])])
     return Response(
-        buf.getvalue(), mimetype="text/csv",
+        sign_export(buf.getvalue().encode("utf-8")), mimetype="text/csv",
         headers={"Content-Disposition": "attachment; filename=grades.csv"},
     )
 
