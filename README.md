@@ -28,19 +28,10 @@ is not yet configured, generate it once:
 python3 -c 'import base64, secrets; print("NOTESAPP_EXPORT_HMAC_KEY=" + base64.b64encode(secrets.token_bytes(32)).decode())' >> .env
 ```
 
-Start the application:
-
-```
-docker compose up --build
-```
-
+Generate the local certificate and start HTTPS using the commands in
+[Class 5: HTTPS and password storage](#class-5-https-and-password-storage) below.
 The first start builds the image, launches PostgreSQL, and loads the seed data
 automatically. NotesApp encrypts the seeded comments before serving requests.
-When it is ready, open:
-
-```
-http://localhost:8080
-```
 
 ## Grade export integrity
 
@@ -78,13 +69,61 @@ e.g. `bob` / `bobpw`.)
 
 - Python 3.11 + Flask (server-rendered Jinja2 pages and a small JSON API)
 - PostgreSQL 15
-- Docker Compose (`web` and `db` services)
+- Docker Compose (`web`, `db`, and the HTTPS `nginx` service)
+
+## Class 5: HTTPS and password storage
+
+Generate the local certificate:
+
+```sh
+mkdir -p nginx/certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout nginx/certs/notesapp.key -out nginx/certs/notesapp.crt \
+  -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+```
+
+Start NotesApp with nginx:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
+```
+
+Open `https://localhost`. Nginx terminates TLS on port 443, redirects port 80 to
+HTTPS, and forwards requests to `web:5000` inside Docker. The HTTPS overlay removes
+the web service's published port 8080.
+
+The local certificate is self-signed. Review its issuer in the browser's
+certificate viewer and confirm the local certificate warning to open the app.
+
+Passwords upgrade to Argon2id on successful login. The first successful login for
+a legacy account replaces its plaintext password with a salted Argon2 hash.
+Subsequent logins verify that hash.
+
+Run the password dictionary exercise from the repository root:
+
+```sh
+python3 crack/make_dump.py
+python3 crack/crack.py
+```
+
+The dictionary is from the course's
+[common-passwords.txt](https://kristenpire.github.io/epita-security-labs/class5/assets/common-passwords.txt).
+Run the hash-speed measurement in the web container:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.https.yml exec -T web python - < crack/benchmark.py
+```
+
+Audit reports:
+
+- [Transit audit (Lab 1)](docs/submission/NotesApp_Transit_Audit.pdf)
+- [Password audit (Lab 2)](docs/submission/NotesApp_Password_Audit.pdf)
 
 ## Reset
 
 ```
-docker compose down -v   # wipes the database volume
-docker compose up        # reloads the seed data
+docker compose -f docker-compose.yml -f docker-compose.https.yml down -v   # wipes the database volume
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
 ```
 
 ## Updating your fork
@@ -111,7 +150,7 @@ git push
 Then **rebuild**, because the app code is baked into the Docker image:
 
 ```
-docker compose up --build
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
 ```
 
 A plain `docker compose up` would keep running the old image.
