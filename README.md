@@ -6,16 +6,26 @@ admin manages users and classes.
 
 ## Run it
 
-You need Docker with the Compose plugin.
+You need Docker with the Compose plugin. Run these commands from the repository root.
+Store a base64-encoded 32-byte AES-GCM key in `.env` as `NOTESAPP_COMMENT_KEY`.
+Reuse the same key on later starts to decrypt the stored comments. `.env` is ignored
+by Git.
+
+If `NOTESAPP_COMMENT_KEY` is not yet configured, generate it once:
 
 ```
-git clone git@github.com:KristenPire/NoteApp.git notesapp
-cd notesapp
-docker compose up
+python3 -c 'import base64, secrets; print("NOTESAPP_COMMENT_KEY=" + base64.b64encode(secrets.token_bytes(32)).decode())' >> .env
+```
+
+Start the application:
+
+```
+docker compose up --build
 ```
 
 The first start builds the image, launches PostgreSQL, and loads the seed data
-automatically. When it is ready, open:
+automatically. NotesApp encrypts the seeded comments before serving requests.
+When it is ready, open:
 
 ```
 http://localhost:8080

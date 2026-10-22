@@ -15,6 +15,7 @@ import subprocess
 
 import psycopg2
 import psycopg2.extras
+from comment_crypto import PREFIX, decrypt_comment, encrypt_comment
 from flask import (
     Flask, request, session, redirect, url_for,
     render_template, Response, jsonify, abort,
@@ -52,6 +53,34 @@ def get_db():
     )
     conn.autocommit = True
     return conn
+
+
+def encrypt_existing_comments():
+    """Convert the starter database's plaintext comments on first startup."""
+    conn = get_db()
+    conn.autocommit = False
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, comment FROM notes WHERE comment IS NOT NULL FOR UPDATE")
+        notes = cur.fetchall()
+        encrypted = any(note["comment"].startswith(PREFIX) for note in notes)
+        if encrypted and any(not note["comment"].startswith(PREFIX) for note in notes):
+            raise ValueError("Mixed plaintext and encrypted comments")
+        for note in notes:
+            comment = note["comment"]
+            if encrypted:
+                decrypt_comment(comment)  # Fail startup if the key is wrong.
+            else:
+                cur.execute(
+                    "UPDATE notes SET comment = %s WHERE id = %s",
+                    (encrypt_comment(comment), note["id"]),
+                )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 # --- Minimal JWT (deliberately weak) ------------------------------------------
@@ -195,6 +224,8 @@ def dashboard():
     )
     notes = cur.fetchall()
     conn.close()
+    for note in notes:
+        note["comment"] = decrypt_comment(note["comment"])
     return render_template("dashboard.html", notes=notes, token=session.get("token"))
 
 
@@ -218,6 +249,7 @@ def api_notes(note_id):
     conn.close()
     if not note:
         return jsonify({"error": "not found"}), 404
+    note["comment"] = decrypt_comment(note["comment"])
     note["grade"] = float(note["grade"]) if note["grade"] is not None else None
     return jsonify(note)
 
@@ -241,6 +273,8 @@ def teacher():
     cur.execute("SELECT id, username FROM users WHERE role = 'student' ORDER BY username")
     students = cur.fetchall()
     conn.close()
+    for note in notes:
+        note["comment"] = decrypt_comment(note["comment"])
     return render_template("teacher.html", classes=classes, notes=notes, students=students)
 
 
@@ -253,7 +287,7 @@ def grades():
     student_id = request.form.get("student_id")
     class_id = request.form.get("class_id")
     grade = request.form.get("grade")
-    comment = request.form.get("comment", "")
+    comment = encrypt_comment(request.form.get("comment", ""))
     conn = get_db()
     cur = conn.cursor()
     if note_id:
@@ -299,7 +333,7 @@ def export_csv():
     writer = csv.writer(buf)
     writer.writerow(["student", "class", "grade", "comment"])
     for r in rows:
-        writer.writerow([r["student"], r["class"], r["grade"], r["comment"]])
+        writer.writerow([r["student"], r["class"], r["grade"], decrypt_comment(r["comment"])])
     return Response(
         buf.getvalue(), mimetype="text/csv",
         headers={"Content-Disposition": "attachment; filename=grades.csv"},
@@ -390,5 +424,6 @@ def healthz():
 
 
 if __name__ == "__main__":
+    encrypt_existing_comments()
     # Plain HTTP on purpose (flaw #3). Nginx + TLS is added in a later lab.
     app.run(host="0.0.0.0", port=5000, debug=True)
