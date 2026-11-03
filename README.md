@@ -16,7 +16,9 @@ admin manages users and classes.
 | Session 03: comment encryption | [AES-GCM storage](web/comment_crypto.py) |
 | Class 4: grade export integrity | [HMAC generation and verification](web/export_integrity.py) |
 | Class 5: HTTPS and passwords | [Transit audit](docs/submission/class-05/NotesApp_Transit_Audit.pdf), [password audit](docs/submission/class-05/NotesApp_Password_Audit.pdf) |
-| Class 6: JWT forgery | [Unsigned and signed token forgery](docs/submission/class-06/NotesApp_JWT_Forgery.md) |
+| Class 6: JWT forgery | [Unsigned and signed token forgery](docs/submission/class-06/NotesApp_JWT_Forgery.md), [PDF](docs/submission/class-06/NotesApp_JWT_Forgery.pdf) |
+
+Report folders are indexed in [docs/submission/README.md](docs/submission/README.md).
 
 ## Run it
 
