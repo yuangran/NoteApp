@@ -23,7 +23,7 @@ services:
       DB_NAME: notesapp
       DB_USER: notesapp
       POSTGRES_PASSWORD: notesapp_pg_pw_2024
-      JWT_SECRET: s3cr3t
+      JWT_SECRET: "Q7O4FL_MxrAEen-OcGpr03U_vioZI1jAwUy8ID45uA0"
       SECRET_KEY: dev-session-key
       NOTESAPP_COMMENT_KEY: ${NOTESAPP_COMMENT_KEY:?Set NOTESAPP_COMMENT_KEY in .env first}
       NOTESAPP_EXPORT_HMAC_KEY: ${NOTESAPP_EXPORT_HMAC_KEY:?Set NOTESAPP_EXPORT_HMAC_KEY in .env first}

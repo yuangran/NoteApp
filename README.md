@@ -17,6 +17,7 @@ admin manages users and classes.
 | Class 4: grade export integrity | [HMAC generation and verification](web/export_integrity.py) |
 | Class 5: HTTPS and passwords | [Transit audit](docs/submission/class-05/NotesApp_Transit_Audit.pdf), [password audit](docs/submission/class-05/NotesApp_Password_Audit.pdf) |
 | Class 6: JWT forgery | [Unsigned and signed token forgery](docs/submission/class-06/NotesApp_JWT_Forgery.md), [PDF](docs/submission/class-06/NotesApp_JWT_Forgery.pdf) |
+| Class 7: JWT fix | [Login hardening](docs/submission/class-07/NotesApp_JWT_Fix.md), [PDF](docs/submission/class-07/NotesApp_JWT_Fix.pdf) |
 
 Report folders are indexed in [docs/submission/README.md](docs/submission/README.md).
 
@@ -130,6 +131,22 @@ Audit reports:
 
 - [Transit audit (Lab 1)](docs/submission/class-05/NotesApp_Transit_Audit.pdf)
 - [Password audit (Lab 2)](docs/submission/class-05/NotesApp_Password_Audit.pdf)
+
+## Class 7: JWT hardening
+
+`verify_jwt` accepts only `HS256` tokens and verifies the signature with a long
+random secret read from `JWT_SECRET`. The app refuses to start if `JWT_SECRET`
+is missing. The compose file supplies the value for this lab; in a real
+deployment the secret comes from a secrets store, never from a committed file.
+
+Rebuild after changing the secret or the verification code:
+
+```sh
+docker compose up -d --build
+```
+
+The report and raw evidence are in
+[docs/submission/class-07/](docs/submission/class-07/).
 
 ## Reset
 

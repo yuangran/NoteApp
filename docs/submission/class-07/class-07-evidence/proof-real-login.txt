@@ -1,0 +1,23 @@
+$ curl -k -s -c <cookie jar> -X POST https://localhost/login -d "username=alice" -d "password=alicepw" -o <body file> -w "HTTP %{http_code}\n"
+HTTP 302
+
+$ curl -k -s -b <cookie jar> -o /tmp/class07-dashboard.html -w "HTTP %{http_code}\n" https://localhost/dashboard
+HTTP 200
+
+$ grep -E "<h1>My grades</h1>|16\.2|10\.5" /tmp/class07-dashboard.html
+  <h1>My grades</h1>
+        <td>10.5</td>
+        <td>16.2</td>
+
+$ curl -k -s -b <cookie jar> https://localhost/dashboard | grep -o 'const TOKEN = "[^"]*"' | cut -d'"' -f2 > /tmp/class07-alice.jwt
+$ curl -k -s -H "Authorization: Bearer <genuine alice token>" -w "HTTP %{http_code}\n" https://localhost/api/notes/1
+{
+  "class_id": 1,
+  "class_name": "Mathematics",
+  "comment": "Late submission, but good quality.",
+  "grade": 16.2,
+  "id": 1,
+  "student": "alice",
+  "student_id": 6
+}
+HTTP 200

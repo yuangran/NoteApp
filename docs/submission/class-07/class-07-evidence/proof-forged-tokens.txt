@@ -1,0 +1,23 @@
+Tokens saved from the Class 6 run.
+
+alg:none token (no signature, trailing dot kept):
+eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VyX2lkIjo5OTk5LCJ1c2VybmFtZSI6ImF0dGFja2VyIiwicm9sZSI6InRlYWNoZXIifQ.
+
+$ curl -k -s -w "\nHTTP %{http_code}\n" https://localhost/api/notes/3 \
+  -H "Authorization: Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VyX2lkIjo5OTk5LCJ1c2VybmFtZSI6ImF0dGFja2VyIiwicm9sZSI6InRlYWNoZXIifQ."
+{
+  "error": "unauthorized"
+}
+
+HTTP 401
+
+s3cr3t-signed HS256 token:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo5OTk5LCJ1c2VybmFtZSI6ImF0dGFja2VyIiwicm9sZSI6InRlYWNoZXIifQ.TfusWdfJDhIKLtdS5IvZ05Qq3rwydmwiVusw41O-ce4
+
+$ curl -k -s -w "\nHTTP %{http_code}\n" https://localhost/api/notes/3 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo5OTk5LCJ1c2VybmFtZSI6ImF0dGFja2VyIiwicm9sZSI6InRlYWNoZXIifQ.TfusWdfJDhIKLtdS5IvZ05Qq3rwydmwiVusw41O-ce4"
+{
+  "error": "unauthorized"
+}
+
+HTTP 401
