@@ -1,0 +1,63 @@
+# Class 8 — after-fix verification (live capture)
+# App served over HTTPS at https://localhost (Class 5/7 nginx config); curl -k for self-signed cert.
+
+$ curl -k -s -c alice.jar -d 'username=alice&password=alicepw' https://localhost/login -o /dev/null -w 'login HTTP %{http_code}
+'
+login HTTP 302
+
+### FIX: alice -> /api/notes/3 (bob's note) must be refused
+$ curl -k -s -b alice.jar https://localhost/api/notes/3 -w '
+HTTP %{http_code}
+'
+{
+  "error": "not found"
+}
+
+HTTP 404
+
+### REGRESSION: alice -> /api/notes/1 (her own) must still work
+$ curl -k -s -b alice.jar https://localhost/api/notes/1 -w '
+HTTP %{http_code}
+'
+{
+  "class_id": 1,
+  "class_name": "Mathematics",
+  "comment": "Late submission, but good quality.",
+  "grade": 16.2,
+  "id": 1,
+  "student": "alice",
+  "student_id": 6
+}
+
+HTTP 200
+
+### REGRESSION: teacher prof.turing -> /api/notes/3 must still work
+$ curl -k -s -c prof.jar -d 'username=prof.turing&password=teach123' https://localhost/login -o /dev/null -w 'login HTTP %{http_code}
+'
+login HTTP 302
+$ curl -k -s -b prof.jar https://localhost/api/notes/3 -w '
+HTTP %{http_code}
+'
+{
+  "class_id": 1,
+  "class_name": "Mathematics",
+  "comment": "Solid work, keep it up.",
+  "grade": 12.6,
+  "id": 3,
+  "student": "bob",
+  "student_id": 7
+}
+
+HTTP 200
+
+### alice walks ids 1..10 after fix — only her own (1,2) return 200
+note 1: HTTP 200  owner=alice
+note 2: HTTP 200  owner=alice
+note 3: HTTP 404  NOT FOUND
+note 4: HTTP 404  NOT FOUND
+note 5: HTTP 404  NOT FOUND
+note 6: HTTP 404  NOT FOUND
+note 7: HTTP 404  NOT FOUND
+note 8: HTTP 404  NOT FOUND
+note 9: HTTP 404  NOT FOUND
+note 10: HTTP 404  NOT FOUND

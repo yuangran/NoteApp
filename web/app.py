@@ -271,6 +271,13 @@ def api_notes(note_id):
     conn.close()
     if not note:
         return jsonify({"error": "not found"}), 404
+    # Flaw #7 fix (IDOR / broken access control): authentication is not enough;
+    # we must also check authorization. A student may read only their OWN note.
+    # Teachers and admins are allowed to read any note (that is their job).
+    # We return 404 (not 403) so we do not even confirm the id exists.
+    if (note["student_id"] != ident["user_id"]
+            and ident.get("role") not in ("teacher", "admin")):
+        return jsonify({"error": "not found"}), 404
     note["comment"] = decrypt_comment(note["comment"])
     note["grade"] = float(note["grade"]) if note["grade"] is not None else None
     return jsonify(note)

