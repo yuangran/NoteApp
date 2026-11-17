@@ -18,6 +18,8 @@ admin manages users and classes.
 | Class 5: HTTPS and passwords | [Transit audit](docs/submission/class-05/NotesApp_Transit_Audit.pdf), [password audit](docs/submission/class-05/NotesApp_Password_Audit.pdf) |
 | Class 6: JWT forgery | [Unsigned and signed token forgery](docs/submission/class-06/NotesApp_JWT_Forgery.md), [PDF](docs/submission/class-06/NotesApp_JWT_Forgery.pdf) |
 | Class 7: JWT fix | [Login hardening](docs/submission/class-07/NotesApp_JWT_Fix.md), [PDF](docs/submission/class-07/NotesApp_JWT_Fix.pdf) |
+| Class 8: IDOR fix | [Ownership check on notes](docs/submission/class-08/NotesApp_IDOR_Fix.md), [PDF](docs/submission/class-08/NotesApp_IDOR_Fix.pdf) |
+| Class 9: injection fix | [SQL and command injection](docs/submission/class-09/NotesApp_Injection_Fix.md), [PDF](docs/submission/class-09/NotesApp_Injection_Fix.pdf) |
 
 Report folders are indexed in [docs/submission/README.md](docs/submission/README.md).
 

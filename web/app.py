@@ -387,7 +387,8 @@ def admin():
 
 @app.route("/admin/ping", methods=["POST"])
 def admin_ping():
-    # Flaw #11: no CSRF token. Flaw #9: command injection via os/system shell.
+    # Flaw #11: no CSRF token checked on this state-changing POST.
+    # (Flaw #9, command injection, is fixed below - see the note before subprocess.)
     if not login_required("admin"):
         return redirect(url_for("login"))
     host = request.form.get("host", "")

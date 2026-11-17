@@ -8,5 +8,5 @@
 | Class 5: HTTPS and passwords | [class-05/](class-05/) | Transit and password audit PDFs; local Markdown notes and capture evidence are not committed |
 | Class 6: JWT forgery | [class-06/](class-06/) | Report (Markdown/PDF) and evidence |
 | Class 7: JWT fix | [class-07/](class-07/) | Report (Markdown/PDF), audit line, fixed `verify_jwt`, and evidence |
-| Class 8: IDOR fix | [class-08/](class-08/) | Report (Markdown), audit line, fixed `api_notes` ownership check, and before/after evidence |
-| Class 9: injection fix | [class-09/](class-09/) | Report (Markdown), audit line, fixed `login` (parameterised) and `admin_ping` (no shell), and before/after evidence |
+| Class 8: IDOR fix | [class-08/](class-08/) | Report (Markdown/PDF), audit line, fixed `api_notes` ownership check, and before/after evidence |
+| Class 9: injection fix | [class-09/](class-09/) | Report (Markdown/PDF), audit line, fixed `login` (parameterised) and `admin_ping` (no shell), and before/after evidence |
