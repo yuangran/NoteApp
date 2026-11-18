@@ -1,0 +1,30 @@
+# BEFORE FIX — stored XSS, flaw #10 (local HTTPS stack, https://localhost)
+# Date: Wed Nov 18 09:33:54 CET 2026
+
+[teacher login prof.turing / teach123 -> teacher.jar]
+  login HTTP 302  (302 = success)
+
+[POST /grades note_id=1 grade=16.2]
+  comment = <script>alert('XSS: runs as '+document.title+' for alice')</script>
+  grades HTTP 302  (302 = saved)
+
+[alice login alice / alicepw -> alice.jar]
+  login HTTP 302
+
+[grep alice /dashboard for a live <script>alert]
+42:        <td><script>alert('XSS: runs as '+document.title+' for alice')</script></td>
+  => LIVE <script> present: the browser will execute it as alice
+
+[grep alice /dashboard for the escaped form]
+  (escaped form not found)
+
+[the comment cell for note 1, raw HTML]
+  39-        <td>Mathematics</td>
+  40-        <td>16.2</td>
+  41-        
+  42:        <td><script>alert('XSS: runs as '+document.title+' for alice')</script></td>
+  43-      </tr>
+
+[grep teacher /teacher page for a live <script>alert]
+246:        <td><script>alert('XSS: runs as '+document.title+' for alice')</script></td>
+  => LIVE <script> also on the teacher page
