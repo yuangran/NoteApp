@@ -15,3 +15,6 @@ venv/
 
 nginx/certs/
 crack/leaked_users.txt
+
+# Class 11 CSRF lab: local curl cookie jars (teacher.jar, eve.jar, ...)
+*.jar

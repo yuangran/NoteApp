@@ -12,6 +12,7 @@ import time
 import base64
 import hashlib
 import re
+import secrets
 import subprocess
 
 import psycopg2
@@ -36,6 +37,41 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-session-key")
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+# Flaw #11 fix (CSRF) - defence in depth: keep the session cookie off most
+# cross-site POSTs, so the browser itself tends to drop a forged request.
+# This is the browser's seatbelt; the server must not rely on it alone.
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+
+# --- CSRF protection (flaw #11 fix) -------------------------------------------
+# A valid session cookie proves WHO the browser belongs to, not whether the user
+# meant to send this request. Every state-changing POST must also carry a secret
+# that only NotesApp's own pages print: a per-session token. Another site can
+# make the browser send a request, but the same-origin policy stops it from
+# reading our HTML, so it can never learn the token.
+def csrf_token():
+    """One random secret per session. Our own forms print it; other sites cannot read it."""
+    if "csrf" not in session:
+        session["csrf"] = secrets.token_urlsafe(32)
+    return session["csrf"]
+
+
+app.jinja_env.globals["csrf_token"] = csrf_token
+
+
+@app.before_request
+def check_csrf():
+    """Every state-changing POST must carry the session's token (login is exempt)."""
+    if request.method == "POST" and request.endpoint != "login":
+        expected = session.get("csrf")
+        sent = request.form.get("csrf_token", "")
+        # Fail closed: no token in the session means refuse. Without `not expected
+        # or`, a session that has no token yet would compare "" with "" - equal -
+        # and the forged request would pass.
+        if not expected or not hmac.compare_digest(sent, expected):
+            abort(400, "CSRF token missing or wrong")
+
+
 ph = PasswordHasher()
 
 
@@ -310,7 +346,9 @@ def teacher():
 
 @app.route("/grades", methods=["POST"])
 def grades():
-    # Flaw #11: no CSRF token checked on this state-changing POST.
+    # Flaw #11 fix (CSRF): the global check_csrf before_request hook now rejects
+    # any POST here that does not carry this session's csrf_token, so a forged
+    # cross-site request on the cookie alone is refused with 400.
     if not login_required("teacher"):
         return redirect(url_for("login"))
     note_id = request.form.get("note_id", "").strip()
@@ -387,7 +425,7 @@ def admin():
 
 @app.route("/admin/ping", methods=["POST"])
 def admin_ping():
-    # Flaw #11: no CSRF token checked on this state-changing POST.
+    # Flaw #11 fix (CSRF): guarded by the global check_csrf before_request hook.
     # (Flaw #9, command injection, is fixed below - see the note before subprocess.)
     if not login_required("admin"):
         return redirect(url_for("login"))

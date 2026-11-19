@@ -21,6 +21,7 @@ admin manages users and classes.
 | Class 8: IDOR fix | [Ownership check on notes](docs/submission/class-08/NotesApp_IDOR_Fix.md), [PDF](docs/submission/class-08/NotesApp_IDOR_Fix.pdf) |
 | Class 9: injection fix | [SQL and command injection](docs/submission/class-09/NotesApp_Injection_Fix.md), [PDF](docs/submission/class-09/NotesApp_Injection_Fix.pdf) |
 | Class 10: stored XSS fix | [Escaped grade comments](docs/submission/class-10/NotesApp_Stored_XSS_Fix.md), [PDF](docs/submission/class-10/NotesApp_Stored_XSS_Fix.pdf) |
+| Class 11: CSRF fix | [Per-session CSRF token](docs/submission/class-11/NotesApp_CSRF_Fix.md), [PDF](docs/submission/class-11/NotesApp_CSRF_Fix.pdf) |
 
 Report folders are indexed in [docs/submission/README.md](docs/submission/README.md).
 

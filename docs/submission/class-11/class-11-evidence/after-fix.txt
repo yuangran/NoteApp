@@ -1,0 +1,29 @@
+# AFTER FIX — CSRF, flaw #11 closed (local stack, http://localhost:8080)
+# Date: Thu Nov 19 09:52:26 CET 2026
+
+== A. Forged request is now refused ==========================================
+[fresh teacher login -> teacher.jar (this cookie holds no csrf token yet)]
+[replay Part 1's forged POST /grades with the cookie only]
+  body: note_id=10&grade=20&comment=Perfect work.
+  forged request HTTP 400  (expect 400 = refused)
+
+== B. The real teacher form still works =======================================
+[load /teacher with the cookie jar and extract the hidden csrf_token]
+  token: 9Ax17mzh4WKMZNu_PboRXDwdC-4rCMvVzkyMls-FQSg
+[POST /grades WITH the token: reset Eve's Mathematics grade to 9.1]
+  real form HTTP 302  (expect 302 = saved)
+
+[verify from Eve's dashboard that note 10 is back to 9.1]
+    32:        <td>9.1</td>
+    34:        <td>Very strong final exam.</td>
+
+  => forged request refused with 400; legitimate token-bearing save accepted
+     with 302. Eve's grade is restored to 9.1. Flaw #11 is closed.
+
+== C. Real use still works (browser, logged in normally) ======================
+  [teacher] grade save via the Add/update form (note 10 = 9.1)   -> 302, saved
+  [admin]   Add user 'csrf_test_user'                            -> created (id 36)
+  [admin]   Ping 127.0.0.1                                       -> '64 bytes from 127.0.0.1'
+  [admin]   delete 'csrf_test_user'                              -> removed (row gone)
+  All four token-bearing forms (teacher x1, admin delete/create/ping) work.
+  Screenshots: part4-forged-refused-browser.jpg, part4-admin-realuse-browser.jpg

